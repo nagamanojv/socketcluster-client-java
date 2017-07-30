@@ -2,6 +2,9 @@ buildscript {
     repositories {
         jcenter()
     }
+    dependencies {
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
+    }
 }
 
 plugins {
@@ -16,7 +19,7 @@ allprojects {
 }
 
 group 'io.github.sac'
-version '1.7.2'
+version '1.7.4'
 
 
 allprojects {
@@ -44,7 +47,7 @@ publishing {
             from components.java
             groupId 'io.github.sac'
             artifactId 'SocketclusterClientJava'
-            version '1.7.2'
+            version '1.7.4'
 
             artifact sourceJar {
                 classifier "sources"
@@ -71,9 +74,9 @@ bintray{
         publicDownloadNumbers = true
 
         version {
-            name = '1.7.2'
+            name = '1.7.4'
             desc = 'Made unusable methods private and added methods for removing callbacks'
-            vcsTag = '1.7.2'
+            vcsTag = '1.7.4'
         }
 
     }
@@ -83,3 +86,7 @@ dependencies {
     compile 'com.neovisionaries:nv-websocket-client:1.30'
     compile group: 'org.json', name: 'json', version: '20090211'
 }
+
+apply plugin: 'eclipse'
+apply plugin: 'eu.appsatori.fatjar'
+

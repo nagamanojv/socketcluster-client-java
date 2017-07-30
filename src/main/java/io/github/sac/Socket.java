@@ -432,6 +432,7 @@ public class Socket extends Emitter {
 
         try {
             ws = factory.createSocket(URL);
+            ws.setPingInterval(8000);
         }catch (IOException e){
             e.printStackTrace();
         }
