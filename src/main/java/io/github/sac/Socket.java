@@ -39,8 +39,8 @@ public class Socket extends Emitter {
         adapter=getAdapter();
     }
 
-    public Channel createChannel(String name){
-        Channel channel=new Channel(name);
+    public Channel createChannel(String name, boolean waitForAuth){
+        Channel channel=new Channel(name, waitForAuth);
         channels.add(channel);
         return channel;
     }
@@ -177,6 +177,7 @@ public class Socket extends Emitter {
                             break;
                         case SETTOKEN:
                             listener.onSetAuthToken(((JSONObject)dataobject).getString("token"),Socket.this);
+                            subscribeChannels();
                             break;
                         case EVENT:
                             if (hasEventAck(event)) {
@@ -273,7 +274,8 @@ public class Socket extends Emitter {
         return this;
     }
 
-    private Socket subscribe(final String channel){
+    private Socket subscribe(final String channel, boolean waitForAuth){
+      if(waitForAuth == false || AuthToken != null) {
         EventThread.exec(new Runnable() {
             public void run() {
                 JSONObject subscribeObject=new JSONObject();
@@ -282,7 +284,7 @@ public class Socket extends Emitter {
                 JSONObject object=new JSONObject();
                 object.put("channel",channel);
                 subscribeObject.put("data",object);
-
+                subscribeObject.put("waitForAuth", waitForAuth);
                 subscribeObject.put("cid",counter.getAndIncrement());
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -290,6 +292,7 @@ public class Socket extends Emitter {
                 ws.sendText(subscribeObject.toString());
             }
         });
+      }
 //        ws.sendText("{\"event\":\"#subscribe\",\"data\":{\"channel\":\""+channel+"\"},\"cid\":"+cid++ +"}");
         return this;
     }
@@ -299,7 +302,8 @@ public class Socket extends Emitter {
         return object;
     }
 
-    private Socket subscribe(final String channel, final Ack ack){
+    private Socket subscribe(final String channel, boolean waitForAuth, final Ack ack){
+      if(waitForAuth == false || AuthToken != null) {
         EventThread.exec(new Runnable() {
             public void run() {
                 JSONObject subscribeObject=new JSONObject();
@@ -309,6 +313,7 @@ public class Socket extends Emitter {
                     acks.put(counter.longValue(), getAckObject(channel, ack));
                     object.put("channel", channel);
                     subscribeObject.put("data", object);
+                    subscribeObject.put("waitForAuth", waitForAuth);
                     subscribeObject.put("cid", counter.getAndIncrement());
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -316,8 +321,9 @@ public class Socket extends Emitter {
                 ws.sendText(subscribeObject.toString());
             }
         });
-//        ws.sendText("{\"event\":\"#subscribe\",\"data\":{\"channel\":\""+channel+"\"},\"cid\":"+cid++ +"}");
-        return this;
+      }
+      //        ws.sendText("{\"event\":\"#subscribe\",\"data\":{\"channel\":\""+channel+"\"},\"cid\":"+cid++ +"}");
+      return this;
     }
 
     private Socket unsubscribe(final String channel){
@@ -556,21 +562,24 @@ public class Socket extends Emitter {
     public class Channel{
 
         String channelName;
+        
+        boolean waitForAuth;
 
         public String getChannelName() {
             return channelName;
         }
 
-        public Channel(String channelName) {
+        public Channel(String channelName, boolean waitForAuth) {
             this.channelName = channelName;
+            this.waitForAuth = waitForAuth;
         }
 
         public void subscribe(){
-            Socket.this.subscribe(channelName);
+            Socket.this.subscribe(channelName, waitForAuth);
         }
 
         public void subscribe(Ack ack){
-            Socket.this.subscribe(channelName,ack);
+            Socket.this.subscribe(channelName, waitForAuth, ack);
         }
 
         public void onMessage(Listener listener){
