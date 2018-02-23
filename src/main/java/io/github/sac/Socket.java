@@ -274,7 +274,7 @@ public class Socket extends Emitter {
         return this;
     }
 
-    private Socket subscribe(final String channel, boolean waitForAuth){
+    private Socket subscribe(final String channel, final boolean waitForAuth){
       if(waitForAuth == false || AuthToken != null) {
         EventThread.exec(new Runnable() {
             public void run() {
@@ -302,7 +302,7 @@ public class Socket extends Emitter {
         return object;
     }
 
-    private Socket subscribe(final String channel, boolean waitForAuth, final Ack ack){
+    private Socket subscribe(final String channel, final boolean waitForAuth, final Ack ack){
       if(waitForAuth == false || AuthToken != null) {
         EventThread.exec(new Runnable() {
             public void run() {
